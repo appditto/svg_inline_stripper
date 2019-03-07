@@ -23,7 +23,7 @@ async def monkey(request):
             else:
                 return web.HTTPServerError(reason='monkey API returned error status')
     await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/{address}.svg')
-    await run_command(f'svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'/home/monkey/.cargo/bin/svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
     await asyncio.sleep(0.01)
     return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
 
