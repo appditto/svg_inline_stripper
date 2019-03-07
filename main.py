@@ -17,7 +17,7 @@ async def monkey(request):
                 await f.close()
             else:
                 return web.HTTPServerError(reason='monkey API returned error status')
-    await run_command('svgo /tmp/monkeyfiles/{0}.svg --enable=inlineStyles --config \'{ "plugins": [ { "inlineStyles": { "onlyMatchedOnce": false } }] }\''.format(address))
+    await run_command('svgo /tmp/monkeyfiles/'+address+'.svg --enable=inlineStyles --config \'{ "plugins": [ { "inlineStyles": { "onlyMatchedOnce": false } }] }\'')
     return web.FileResponse(f'/tmp/monkeyfiles/{address}.svg')
 
 async def run_command(cmd):
