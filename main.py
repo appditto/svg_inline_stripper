@@ -22,8 +22,20 @@ async def monkey(request):
                 await f.close()
             else:
                 return web.HTTPServerError(reason='monkey API returned error status')
-    await run_command(f'/home/monkey/svg_inline_stripper/svgprocess.sh /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
-    await asyncio.sleep(0.05)
+    await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/{address}.svg')
+    await run_command(f'/home/monkey/.cargo/bin/svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.01)
+    # Remove duplicate <svg and </svg
+    await run_command(f'sed -i "s%<svg%<g%g" /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.02)
+    await run_command(f'sed -i "s%</svg%</g%g" /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.02)
+    await run_command(f'sed -i -e "0,/<g/ s/<g/<svg/" /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.02)
+    await run_command(f'sed -i "s/....$//" /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.02)
+    await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.02)
     return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
 
 async def run_command(cmd):
