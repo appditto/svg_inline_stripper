@@ -1,19 +1,19 @@
-# SVGO API
+# SVGCleaner API
 
-Python asyncio web API that runs SVGs through the `svgo` tool. Uses aiofiles and aiohttp.
+Python asyncio web API that runs SVGs through the `svgcleaner` tool. Uses aiofiles and aiohttp.
 
 Middleware for monkeygen.com
 
-Removes and minifies SVGs using [SVGO](https://github.com/svg/svgo), the main goal is to convert CSS styles to inline styles - but this API wrapper could be modified to use svgo in any way.
+Removes and minifies SVGs using [svgcleaner](https://github.com/RazrFalcon/svgcleaner), the main goal is to convert CSS styles to inline styles - but this API wrapper could be modified to use svgo in any way.
 
 # Requirements
 
-Recommended setup (NodeJS is required also for SVGO):
+Rust is required, to install check: https://www.rust-lang.org/tools/install
 
 ```
 # virtualenv -p python3.6 venv
 # pip install -r requirements.txt
-# npm install -g svgo
+# cargo install svgcleaner
 ```
 
 # Deployment

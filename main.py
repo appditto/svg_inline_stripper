@@ -17,8 +17,9 @@ async def monkey(request):
                 await f.close()
             else:
                 return web.HTTPServerError(reason='monkey API returned error status')
-    await run_command('svgo /tmp/monkeyfiles/' + address + '.svg --enable=inlineStyles,removeUnknownsAndDefaults,moveGroupAttrsToElems --config \'{ "plugins": [ { "inlineStyles": { "onlyMatchedOnce": false } }, {"removeStyleElement":true}, {"removeUnknownsAndDefaults":{"keepDataAttrs":false}}] }\' -o test.svg --pretty')
-    return web.FileResponse(f'/tmp/monkeyfiles/{address}.svg')
+    await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/{address}.svg')
+    await run_command(f'svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
+    return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
 
 async def run_command(cmd):
     proc = await asyncio.create_subprocess_shell(
