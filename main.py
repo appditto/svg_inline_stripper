@@ -8,6 +8,11 @@ async def monkey(request):
         address = request.rel_url.query['address']
     except KeyError:
         return web.HTTPBadRequest(reason='address parameter is required')
+    try:
+        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
+        return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+    except Exception:
+        pass
     async with ClientSession() as session:
         url = f"http://bananomonkeys.herokuapp.com/image?address={address}"
         async with session.get(url, timeout=30) as resp:
@@ -19,6 +24,7 @@ async def monkey(request):
                 return web.HTTPServerError(reason='monkey API returned error status')
     await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/{address}.svg')
     await run_command(f'svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
+    await asyncio.sleep(0.01)
     return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
 
 async def run_command(cmd):
