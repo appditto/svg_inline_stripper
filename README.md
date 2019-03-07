@@ -4,7 +4,7 @@ Python asyncio web API that runs SVGs through the `svgcleaner` tool. Uses aiofil
 
 Middleware for monkeygen.com
 
-Removes and minifies SVGs using [svgcleaner](https://github.com/RazrFalcon/svgcleaner), the main goal is to convert CSS styles to inline styles - but this API wrapper could be modified to use svgo in any way.
+Removes and minifies SVGs using [svgcleaner](https://github.com/RazrFalcon/svgcleaner), the main goal is to convert CSS styles to inline styles - but there's other SVG pre-processing things for our specific needs in this application.
 
 # Requirements
 
