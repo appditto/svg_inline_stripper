@@ -1,7 +1,17 @@
 import asyncio
+import os
 
 import aiofiles
 from aiohttp import ClientSession, log, web
+from xml.parsers.expat import ParserCreate
+
+def validate_xml_markup(xml_data : str):
+    parser = ParserCreate()
+    try:
+        parser.Parse(xml_data)
+        return True
+    except Exception:
+        return False
 
 async def monkey(request):
     try:
@@ -36,7 +46,15 @@ async def monkey(request):
     await asyncio.sleep(0.02)
     await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/{address}_optimized.svg')
     await asyncio.sleep(0.02)
-    return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+    try:
+        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
+        if (validate_xml_markup(await cached_f.read())):
+            return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+        else:
+            os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
+            return web.HTTPServerError("something went wrong")
+    except Exception:
+        return web.HTTPServerError("something went wrong")
 
 async def run_command(cmd):
     proc = await asyncio.create_subprocess_shell(
