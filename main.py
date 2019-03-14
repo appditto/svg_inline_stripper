@@ -1,7 +1,6 @@
 import asyncio
 import os
 import functools
-from turtledemo.lindenmayer import replace
 from xml.parsers.expat import ParserCreate
 
 import aiofiles
