@@ -81,7 +81,11 @@ async def monkey(request):
             await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
             return web.FileResponse(out_name)
         cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
-        return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+        if (validate_xml_markup(await cached_f.read())):
+            return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+        else:
+            os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
+            return web.HTTPServerError("something went wrong")
     except Exception:
         return web.HTTPServerError("something went wrong")
 
