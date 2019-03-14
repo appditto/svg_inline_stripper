@@ -44,15 +44,15 @@ async def monkey(request):
             pass
     try:
         if is_png:
-            out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
+            out_name = f'/tmp/monkeyfiles/static/{address}_optimized-{size}.png'
             try:
                 cached_f = await aiofiles.open(out_name, mode='r')
                 return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
             except Exception:
                 pass
-            await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
+            await svg2png(f'/tmp/monkeyfiles/static/{address}_optimized.svg', size)
             return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
-        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
+        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/static/{address}_optimized.svg', mode='r')
         return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized.svg')
     except Exception:
         pass
@@ -60,36 +60,36 @@ async def monkey(request):
         url = f"http://bananomonkeys.herokuapp.com/image?address={address}"
         async with session.get(url, timeout=30) as resp:
             if resp.status == 200:
-                f = await aiofiles.open(f'/tmp/monkeyfiles/{address}.svg', mode='wb')
+                f = await aiofiles.open(f'/tmp/monkeyfiles/static/{address}.svg', mode='wb')
                 await f.write(await resp.read())
                 await f.close()
             else:
                 return web.HTTPServerError(reason='monkey API returned error status')
-    await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/{address}.svg')
-    await run_command(f'/home/monkey/.cargo/bin/svgcleaner /tmp/monkeyfiles/{address}.svg /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'sed -i "s%\'</style>%</style>%g" /tmp/monkeyfiles/static/{address}.svg')
+    await run_command(f'/home/monkey/.cargo/bin/svgcleaner /tmp/monkeyfiles/static/{address}.svg /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.01)
     # Remove duplicate <svg and </svg
-    await run_command(f'sed -i "s%<svg%<g%g" /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'sed -i "s%<svg%<g%g" /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.02)
-    await run_command(f'sed -i "s%</svg%</g%g" /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'sed -i "s%</svg%</g%g" /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.02)
-    await run_command(f'sed -i -e "0,/<g/ s/<g/<svg/" /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'sed -i -e "0,/<g/ s/<g/<svg/" /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.02)
-    await run_command(f'sed -i "s/....$//" /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'sed -i "s/....$//" /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.02)
-    await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/{address}_optimized.svg')
+    await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/static/{address}_optimized.svg')
     await asyncio.sleep(0.02)
     try:
-        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
+        cached_f = await aiofiles.open(f'/tmp/monkeyfiles/static/{address}_optimized.svg', mode='r')
         if (validate_xml_markup(await cached_f.read())):
             if is_png:
-                out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
-                await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
+                out_name = f'/tmp/monkeyfiles/static/{address}_optimized-{size}.png'
+                await svg2png(f'/tmp/monkeyfiles/static/{address}_optimized.svg', size)
                 return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
             else:
                 return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized.svg')
         else:
-            os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
+            os.remove(f'/tmp/monkeyfiles/static/{address}_optimized.svg')
             return web.HTTPServerError("something went wrong")
     except Exception:
         return web.HTTPServerError("something went wrong")
