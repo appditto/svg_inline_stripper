@@ -1,9 +1,13 @@
 import asyncio
 import os
+import functools
+from turtledemo.lindenmayer import replace
+from xml.parsers.expat import ParserCreate
 
 import aiofiles
 from aiohttp import ClientSession, log, web
-from xml.parsers.expat import ParserCreate
+from cairosvg import svg2png as csvg2png
+
 
 def validate_xml_markup(xml_data : str):
     parser = ParserCreate()
@@ -13,12 +17,37 @@ def validate_xml_markup(xml_data : str):
     except Exception:
         return False
 
+def svg2pngsync(data):
+    svgFile = data['svgFile']
+    size = data['size']
+    csvg2png(url=svgFile, write_to=svgFile.replace('.svg', f'-{size}.png'), output_height=size, output_width=size)
+
+async def svg2png(svgFile, size):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, functools.partial(svg2pngsync, data={'svgFile':svgFile, 'size':size}))
+
 async def monkey(request):
+    is_png = False
+    size = 1000
     try:
         address = request.rel_url.query['address']
     except KeyError:
         return web.HTTPBadRequest(reason='address parameter is required')
     try:
+        if request.rel_url.query['png'] == "true":
+            is_png = True
+    except KeyError:
+        pass
+    if is_png:
+        try:
+            size = int(request.rel_url.query['size'])
+        except Exception:
+            pass
+    try:
+        if is_png:
+            out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
+            await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
+            return web.FileResponse(out_name)
         cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
         return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
     except Exception:
@@ -47,12 +76,12 @@ async def monkey(request):
     await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/{address}_optimized.svg')
     await asyncio.sleep(0.02)
     try:
+        if is_png:
+            out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
+            await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
+            return web.FileResponse(out_name)
         cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
-        if (validate_xml_markup(await cached_f.read())):
-            return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
-        else:
-            os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
-            return web.HTTPServerError("something went wrong")
+        return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
     except Exception:
         return web.HTTPServerError("something went wrong")
 
@@ -64,4 +93,4 @@ async def run_command(cmd):
 
 app = web.Application()
 app.router.add_get('/', monkey)
-#web.run_app(app, port=9099)
+web.run_app(app, port=9099)
