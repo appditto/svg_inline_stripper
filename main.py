@@ -75,13 +75,14 @@ async def monkey(request):
     await run_command(f'echo "</svg>" >> /tmp/monkeyfiles/{address}_optimized.svg')
     await asyncio.sleep(0.02)
     try:
-        if is_png:
-            out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
-            await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
-            return web.FileResponse(out_name)
         cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
         if (validate_xml_markup(await cached_f.read())):
-            return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+            if is_png:
+                out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
+                await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
+                return web.FileResponse(out_name)
+            else:
+                return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
         else:
             os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
             return web.HTTPServerError("something went wrong")
