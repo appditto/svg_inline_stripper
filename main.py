@@ -45,10 +45,15 @@ async def monkey(request):
     try:
         if is_png:
             out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
+            try:
+                cached_f = await aiofiles.open(out_name, mode='r')
+                return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
+            except Exception:
+                pass
             await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
-            return web.FileResponse(out_name)
+            return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
         cached_f = await aiofiles.open(f'/tmp/monkeyfiles/{address}_optimized.svg', mode='r')
-        return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+        return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized.svg')
     except Exception:
         pass
     async with ClientSession() as session:
@@ -80,9 +85,9 @@ async def monkey(request):
             if is_png:
                 out_name = f'/tmp/monkeyfiles/{address}_optimized-{size}.png'
                 await svg2png(f'/tmp/monkeyfiles/{address}_optimized.svg', size)
-                return web.FileResponse(out_name)
+                return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
             else:
-                return web.FileResponse(f'/tmp/monkeyfiles/{address}_optimized.svg')
+                return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized.svg')
         else:
             os.remove(f'/tmp/monkeyfiles/{address}_optimized.svg')
             return web.HTTPServerError("something went wrong")
