@@ -1,3 +1,5 @@
 aiofiles
 aiohttp
 cairosvg
+aioredlock
+pillow
