@@ -28,12 +28,13 @@ def validate_png_sync(path : str):
         img = Image.load(path)
         img.verify()
         img.close()
+        return True
     except Exception:
         return False
 
 async def validate_png(path : str):
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, functools.partial(validate_png_sync, data={'path':path}))
+    return await loop.run_in_executor(None, functools.partial(validate_png_sync, data={'path':path}))
 
 def svg2pngsync(data):
     svgFile = data['svgFile']
@@ -70,7 +71,8 @@ async def monkey(request):
                     out_name = f'/tmp/monkeyfiles/static/{address}_optimized-{size}.png'
                     try:
                         cached_f = await aiofiles.open(out_name, mode='r')
-                        await validate_png(out_name)
+                        if not await validate_png(out_name):
+                          raise Exception
                         return web.HTTPFound(f'https://monkeys.appditto.com/static/{address}_optimized-{size}.png')
                     except Exception:
                         pass
