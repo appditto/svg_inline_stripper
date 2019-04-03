@@ -82,7 +82,7 @@ async def monkey(request):
                 pass
             async with ClientSession() as session:
                 url = f"http://bananomonkeys.herokuapp.com/image?address={address}"
-                async with session.get(url, timeout=30, proxy='http://localhost:3128') as resp:
+                async with session.get(url, timeout=30) as resp:
                     if resp.status == 200:
                         f = await aiofiles.open(f'/tmp/monkeyfiles/static/{rid}.svg', mode='wb')
                         await f.write(await resp.read())
